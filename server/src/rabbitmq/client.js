@@ -1,8 +1,8 @@
-const Consumer = require("./consumer");
-const Producer = require("./producer")
-const amqplib = require("amqplib");
-const config = require("../config");
-const eventEmitter = require("events");
+
+import * as Consumer from "./consumer.js";
+import * as Producer from "./producer.js";
+import amqplib from "amqplib";
+import * as config from "../config.js";
 
 
 //rabbitmqclient singleton
@@ -16,7 +16,6 @@ class RabbitMQClient {
 
     isInitialized = false;
     static instance;
-    eventEmitter;
 
     constructor(){}
 
@@ -31,7 +30,7 @@ class RabbitMQClient {
 
 
     async init(){
-        console.log("INIT RABBITMQ CLIENT")
+        console.log("INIT RABBITMQ CLIENT ON REPLY QUEUE")
         
         if(this.isInitialized){
             console.log(this.isInitialized)
@@ -39,38 +38,39 @@ class RabbitMQClient {
         }
 
         //create the connection
-        this.connection = await amqplib.connect(config.rabbitMQ.url).catch(err => console.log(err));
-        
+        this.connection = await amqplib.connect(config.default.rabbitMQ.url).catch(err => console.log(err));
+       /*
         //create the channels
         this.producerChannel = await this.connection.createChannel();
         this.consumerChannel = await this.connection.createChannel();
         //set the name of the queue var to "replyQueueName"
-        const { queue: replyQueueName } = await this.consumerChannel.assertQueue('', {
+        const { queue: rpcQueue } = await this.consumerChannel.assertQueue('rpc_queue', {
             exclusive: true
         });
-        
-        //init the eventEmitter
-        this.eventEmitter = new eventEmitter.EventEmitter();
+       
+
         //use the producer class
-        this.producer = new Producer(this.producerChannel, replyQueueName, this.eventEmitter)
+        this.producer = new Producer.default(this.producerChannel)
         //use the consumer class
-        this.consumer = new Consumer(this.consumerChannel, replyQueueName, this.eventEmitter);
+        this.consumer = new Consumer.default(this.consumerChannel, rpcQueue);
    
         this.consumer.consumeMessages();
 
 
         //init
         this.isInitialized = true;
-    
+     */
     }
 
 
-    async produce(data){
+    async produce(data, correlationId, replyToQueue){
+    /*
         console.log(this.isInitialized)
         if(!this.isInitialized){
             await this.init();
         }
-        return await this.producer.produceMessages(data);
+        return await this.producer.default.produceMessages(data, correlationId, replyToQueue);
+        */
     }
 
     
@@ -78,4 +78,5 @@ class RabbitMQClient {
 }
 
 //return the singleton instance created
-module.exports = RabbitMQClient.getInstance();
+//module.exports = RabbitMQClient.getInstance();
+export default RabbitMQClient.getInstance();

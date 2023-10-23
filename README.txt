@@ -1,0 +1,1 @@
+Server folder has a default nodejs implementation due to certain class errors, so, inside server folder > src > server.js is doing all the connection and consumer and producer functions
